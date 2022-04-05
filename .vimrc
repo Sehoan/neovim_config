@@ -89,7 +89,7 @@ set updatetime=300                      " Faster completion
 set timeoutlen=500                      " By default timeoutlen is 1000 ms
 set formatoptions-=cro                  " Stop newline continuation of comments
 set laststatus=2                        " Always show statusline
-set mouse=a                             " enable mouse
+set mouse=                             " enable mouse
 set nohlsearch                            " highlight search results
 set conceallevel=0                      " conceal markdown notation in .md file
 set showtabline=0                       " hide tabline at the top permanently
@@ -125,11 +125,11 @@ augroup END
 "---------------------------------------------------------------
 
 let g:gruvbox_material_background = 'soft'                " hard background contrast 
-let g:gruvbox_material_enable_bold = 1                    " enable bold in function names
-let g:gruvbox_material_enable_italic = 1                  " enable italic for eligible fonts
+let g:gruvbox_material_enable_bold = 0                    " enable bold in function names
+let g:gruvbox_material_enable_italic = 0                  " enable italic for eligible fonts
 let g:gruvbox_material_transparent_background = 1         " Enable transparent background
 let g:gruvbox_material_visual = 'red background'          " visual selection color
-let g:gruvbox_material_menu_selection_background = 'orange'  " menu selection color in popup menu
+let g:gruvbox_material_menu_selection_background = 'red'  " menu selection color in popup menu
 let g:gruvbox_material_sign_column_background = 'none'    " make sign column background seameless with the main pane
 let g:gruvbox_material_ui_contrast = 'low'                " control sign column number contrast
 let g:gruvbox_material_show_eob = 0                       " show end-of-buffer symbol ~
@@ -160,6 +160,7 @@ augroup END
 " ---------------------------------------------------------------
 
 noremap <leader>gs :Git<CR>
+noremap <leader>gd :Gvdiffsplit<CR>
 
 "  Smooth Scroll
 noremap <silent> <c-u> :call smooth_scroll#up(&scroll, 0, 2)<CR>
@@ -213,6 +214,7 @@ imap <C-c> <plug>NERDCommenterInsert
 let g:NERDCustomDelimiters={
 	\ 'javascriptreact': { 'left': '//', 'right': '', 'leftAlt': '/*', 'rightAlt': '*/' },
 	\ 'typescriptreact': { 'left': '//', 'right': '', 'leftAlt': '/*', 'rightAlt': '*/' },
+	\ 'c': { 'left': '//', 'right': '', 'leftAlt': '/*', 'rightAlt': '*/' },
 \}
 
 " ---------------------------------------------------------------
@@ -223,25 +225,42 @@ lua << END
 require'lualine'.setup {
   options = {
     theme = 'auto',
-    },
+  },
   sections = {
     lualine_a = {'mode'},
-    lualine_b = {'branch', 'diff'},
-    lualine_c = {'filename'},
-    lualine_x = {''},
-    lualine_y = {'fileformat'},
-    lualine_z = {'filetype'},
+    lualine_b = {
+      {
+        'filename',
+        path = 1,
+      }
     },
+    lualine_c = {},
+
+    lualine_x = {''},
+    lualine_y = {'branch', 'diff'},
+    lualine_z = {'filetype'},
+  },
   inactive_sections = {
-    lualine_a = {''},
+    lualine_a = {
+      {
+        'filename',
+        path = 1,
+      }
+    },
     lualine_b = {''},
-    lualine_c = {'filename'},
+    lualine_c = {''},
     lualine_x = {''},
     lualine_y = {''},
-    lualine_z = {'filetype'},
+    lualine_z = {
+       {
+           'filetype',
+           colored = true,
+           icon_only = true
+       }
     },
+  },
   extensions = {'nerdtree', 'fzf', 'fugitive'}
-  }
+}
 END
 
 " ---------------------------------------------------------------
@@ -315,6 +334,8 @@ autocmd FileType markdown,markdown.mdx set conceallevel=0   " prevent code block
 
 let g:sneak#label = 1       " enable label mode
 let g:sneak#use_ic_scs = 1  " case insensitive
+let g:sneak#absolute_dir = 1
+let g:sneak#prompt = '➜ '
 hi SneakScope guibg=#b85651
 hi SneakScope guifg=white
 
@@ -341,7 +362,7 @@ nnoremap <silent><space>/ :Rg! <C-R><C-W><CR>
 
 map <silent><C-p> :NERDTreeClose<CR>:Files<CR>
 map <silent><leader>m :NERDTreeClose<CR>:History<CR>
-map <silent><leader>l :BLines<CR>
+map <silent><space>l :BLines<CR>
 
 let g:fzf_action = {
       \ 'ctrl-i': 'split',
@@ -431,6 +452,8 @@ inoremap <silent><expr> <TAB>
       \ <SID>check_back_space() ? "\<TAB>" :
       \ coc#refresh()
 
+" let g:coc_snippet_next = '<c-j>' " jump to next paramter in snippet
+
 function! s:check_back_space() abort
   let col = col('.') - 1
   return !col || getline('.')[col - 1]  =~# '\s'
@@ -506,6 +529,8 @@ command! -nargs=0 Prettier :CocCommand prettier.formatFile
 
 " ---------------------------------------------------------------
 " NerdTree 
+" ---------------------------------------------------------------
+
 " Eliminate unnecessary signcolumn line on the left side of NERDTree
 augroup nerdtree
   autocmd FileType nerdtree setlocal signcolumn=no 
@@ -607,6 +632,13 @@ nnoremap n nzz
 nnoremap N Nzz
 
 noremap <silent><leader>so :so ~/.vimrc<CR>
+
+" toggle folding
+nnoremap <silent><leader>z za
+
+" navigate quickfix list
+nnoremap <silent><leader>l :cnext<CR> 
+nnoremap <silent><leader>h :cprev<CR>
 
 " Automatically source vimrc on save.
 autocmd! bufwritepost ~/.vimrc source $MYVIMRC
